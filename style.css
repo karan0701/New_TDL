@@ -864,8 +864,9 @@ kbd {
   transition: border-color var(--fast);
 }
 
-.cal-cell.ghost   { opacity: 0.2; }
+.cal-cell.ghost   { opacity: 0.2; pointer-events: none; }
 .cal-cell.today-c { border-color: var(--b-3); }
+.cal-cell.selected-c, .day-card.selected-c { border-color: var(--green); background: var(--bg-3); }
 
 .cal-num {
   font-family: var(--f-mono);

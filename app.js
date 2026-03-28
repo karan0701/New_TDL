@@ -12,12 +12,20 @@ const state = {
   activeTab: 'daily',
   search:    '',
   calDate:   new Date(),
+  selectedMonthlyDate: (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  })(),
+  selectedWeeklyDay: (() => {
+    const rawDow = new Date().getDay();
+    return rawDow === 0 ? 6 : rawDow - 1;
+  })(),
 };
 state.calDate.setDate(1);   // always start on the 1st
 
 /* MODULE: Storage */
 const Storage = {
-  KEY: 'taskr_v3',
+  KEY: 'taskr_v4',
 
   load() {
     try {
@@ -37,25 +45,7 @@ const Storage = {
   },
 
   _seed() {
-    const t = Clock.shortTime(new Date());
-    state.tasks = {
-      daily: [
-        { id: 1, text: 'Review project requirements',     priority: 'high',   done: false, created: t },
-        { id: 2, text: 'Team standup & sync notes',       priority: 'medium', done: true,  created: t },
-        { id: 3, text: 'Update component documentation',  priority: 'low',    done: false, created: t },
-      ],
-      weekly: [
-        { id: 4, text: 'Sprint planning session',         priority: 'high',   done: false, day: 0, created: t },
-        { id: 5, text: 'Code review & merge pull requests',priority: 'medium', done: false, day: 2, created: t },
-        { id: 6, text: 'Weekly retrospective',            priority: 'medium', done: false, day: 4, created: t },
-        { id: 7, text: 'Personal project deep work',      priority: 'low',    done: false, day: 5, created: t },
-      ],
-      monthly: [
-        { id: 8,  text: 'Complete portfolio website',     priority: 'high',   done: false, created: t },
-        { id: 9,  text: 'Master a new framework',         priority: 'medium', done: false, created: t },
-        { id: 10, text: 'Read two technical books',       priority: 'low',    done: false, created: t },
-      ],
-    };
+    state.tasks = { daily: [], weekly: [], monthly: [] };
     this.save();
   },
 };
@@ -208,9 +198,12 @@ function emptyHtml(msg) {
 }
 
 function taskHtml(type, t) {
-  const dayTag = (type === 'weekly' && t.day !== undefined)
-    ? `<span class="day-tag">${DAYS[t.day]}</span>`
-    : '';
+  let extraTag = '';
+  if (type === 'weekly' && t.day !== undefined) {
+    extraTag = `<span class="day-tag">${DAYS[t.day]}</span>`;
+  } else if (type === 'monthly' && t.targetDate) {
+    extraTag = `<span class="day-tag">${t.targetDate}</span>`;
+  }
 
   return `
     <div class="task-item ${t.done ? 'done' : ''}" data-id="${t.id}"
@@ -219,7 +212,7 @@ function taskHtml(type, t) {
       <span class="task-text"
             onclick="event.stopPropagation()"
             ondblclick="UI.editInline(event,'${type}',${t.id})">${escHtml(t.text)}</span>
-      ${dayTag}
+      ${extraTag}
       <span class="pri pri-${t.priority}">${t.priority}</span>
       <span class="task-time">${t.created}</span>
       <button class="del-btn"
@@ -290,8 +283,10 @@ const Render = {
         const bars     = dayTasks.map(t =>
           `<div class="dc-bar ${t.priority} ${t.done ? 'faded' : ''}"></div>`
         ).join('');
+        const isSelected = state.selectedWeeklyDay === i;
+        const isToday = i === todayI;
         return `
-          <div class="day-card ${i === todayI ? 'today' : ''}">
+          <div class="day-card ${isToday ? 'today' : ''} ${isSelected ? 'selected-c' : ''}" onclick="UI.selectWeeklyDay(${i})" style="cursor:pointer">
             <div class="dc-name">${d}</div>
             <div class="dc-num">${date.getDate()}</div>
             ${bars}
@@ -338,15 +333,22 @@ const Render = {
       // Actual days
       for (let d = 1; d <= monthLen; d++) {
         const isToday = isCurrent && d === today.getDate();
-        const dots    = isToday
-          ? tasks.slice(0, 6).map(t =>
+        
+        const cellDateStr = `${cd.getFullYear()}-${String(cd.getMonth() + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dayTasks = tasks.filter(t => t.targetDate === cellDateStr);
+
+        const isSelected = state.selectedMonthlyDate === cellDateStr;
+
+        const dots = dayTasks.length > 0
+          ? dayTasks.slice(0, 6).map(t =>
               `<div class="cal-dot ${t.done ? 'faded' : ''}"></div>`
             ).join('')
           : '';
+
         html += `
-          <div class="cal-cell ${isToday ? 'today-c' : ''}">
+          <div class="cal-cell ${isToday ? 'today-c' : ''} ${isSelected ? 'selected-c' : ''}" onclick="UI.selectCalDate('${cellDateStr}')" style="cursor:pointer">
             <div class="cal-num">${d}</div>
-            ${isToday ? `<div class="cal-dots">${dots}</div>` : ''}
+            ${dots ? `<div class="cal-dots">${dots}</div>` : ''}
           </div>`;
       }
 
@@ -401,12 +403,24 @@ const UI = {
       priority: $(`${key}-priority`)?.value ?? 'medium',
     };
     if (type === 'weekly') {
-      fields.day = parseInt($('w-day')?.value ?? '0', 10);
+      fields.day = state.selectedWeeklyDay;
+    } else if (type === 'monthly') {
+      fields.targetDate = state.selectedMonthlyDate;
     }
 
     Tasks.add(type, fields);
     input.value = '';
     input.focus();
+  },
+
+  selectCalDate(dateStr) {
+    state.selectedMonthlyDate = dateStr;
+    Render.monthly();
+  },
+
+  selectWeeklyDay(dayIndex) {
+    state.selectedWeeklyDay = dayIndex;
+    Render.weekly();
   },
 
   /** Double-click a task text span to edit it inline */
