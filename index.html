@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TASKER — Personal Task Manager</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Iosevka+Charon+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Iosevka+Charon:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=SN+Pro:ital,wght@0,200..900;1,200..900&display=swap');
+  </style>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-top">
+      <div class="brand">
+        <div class="brand-mark">T</div>
+        <div>
+          <div class="brand-name">TASKER</div>
+          <div class="brand-sub">Task Manager</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="daily">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none">
+            <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Daily
+          <span class="nav-badge" id="badge-daily">0</span>
+        </button>
+        <button class="nav-item" data-tab="weekly">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="5" width="16" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6 2v3M14 2v3M2 9h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Weekly
+          <span class="nav-badge" id="badge-weekly">0</span>
+        </button>
+        <button class="nav-item" data-tab="monthly">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M10 6.5v3.5l2.5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Monthly
+          <span class="nav-badge" id="badge-monthly">0</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-clock">
+        <div class="s-clock" id="clock">00:00:00</div>
+        <div class="s-date"  id="date-display">—</div>
+      </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MOBILE HEADER ═══ -->
+  <header class="mob-header">
+    <button class="burger" id="menu-btn" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="mob-brand">TASKR</span>
+    <div class="mob-clock" id="mob-clock">00:00:00</div>
+  </header>
+
+  <!-- ═══ BACKDROP (mobile) ═══ -->
+  <div class="backdrop" id="backdrop"></div>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <main class="main">
+
+    <!-- ─── DAILY ─── -->
+    <section class="view active" id="view-daily">
+
+      <div class="page-hero">
+        <div>
+          <p class="eyebrow">Today's Focus</p>
+          <h1 class="page-title">Daily<br>Tasks</h1>
+        </div>
+        <div class="score-ring-wrap">
+          <svg class="score-svg" viewBox="0 0 80 80">
+            <circle class="ring-track" cx="40" cy="40" r="30"/>
+            <circle class="ring-fill"  cx="40" cy="40" r="30" id="ring-fill"/>
+          </svg>
+          <div class="score-center">
+            <span class="score-pct" id="score-pct">0%</span>
+            <span class="score-sub">done</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-box">
+          <span class="stat-n" id="m-total">0</span>
+          <span class="stat-l">Total</span>
+        </div>
+        <div class="stat-box green">
+          <span class="stat-n" id="m-done">0</span>
+          <span class="stat-l">Done</span>
+        </div>
+        <div class="stat-box red">
+          <span class="stat-n" id="m-high">0</span>
+          <span class="stat-l">High&nbsp;Priority</span>
+        </div>
+        <div class="stat-box amber">
+          <span class="stat-n" id="m-pending">0</span>
+          <span class="stat-l">Pending</span>
+        </div>
+      </div>
+
+      <div class="prog-row">
+        <span class="prog-label">Daily Progress</span>
+        <span class="prog-pct" id="d-pct">0%</span>
+      </div>
+      <div class="prog-track"><div class="prog-bar" id="d-progress"></div></div>
+
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" class="search-input" placeholder="Search all tasks ">
+      </div>
+
+      <div class="add-card">
+        <input type="text" class="add-input" id="d-input" placeholder="What needs to be done today? ">
+        <div class="add-footer">
+          <select class="add-select" id="d-priority">
+            <option value="high">🔴  High priority</option>
+            <option value="medium" selected>🟡  Medium priority</option>
+            <option value="low">🟢  Low priority</option>
+          </select>
+          <button class="add-btn" id="d-add">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Add Task
+          </button>
+        </div>
+      </div>
+
+      <div class="task-section">
+        <div class="section-label"><span class="dot red"></span>High Priority</div>
+        <div class="task-list" id="daily-high"></div>
+      </div>
+      <div class="task-section">
+        <div class="section-label"><span class="dot amber"></span>Medium Priority</div>
+        <div class="task-list" id="daily-medium"></div>
+      </div>
+      <div class="task-section">
+        <div class="section-label"><span class="dot green"></span>Low Priority</div>
+        <div class="task-list" id="daily-low"></div>
+      </div>
+
+    </section>
+
+    <!-- ─── WEEKLY ─── -->
+    <section class="view" id="view-weekly">
+
+      <div class="page-hero">
+        <div>
+          <p class="eyebrow">This Week's Plan</p>
+          <h1 class="page-title">Weekly<br>Tasks</h1>
+        </div>
+        <div class="hero-stat">
+          <div class="hs-nums"><span id="w-done">0</span><span class="hs-sep">/</span><span class="hs-dim" id="w-total">0</span></div>
+          <div class="hs-label">Tasks done</div>
+        </div>
+      </div>
+
+      <div class="prog-row">
+        <span class="prog-label">Week Progress</span>
+        <span class="prog-pct" id="w-pct">0%</span>
+      </div>
+      <div class="prog-track"><div class="prog-bar" id="w-progress"></div></div>
+
+      <div class="week-strip" id="week-strip"></div>
+
+      <div class="add-card">
+        <input type="text" class="add-input" id="w-input" placeholder="Add a task for this week…">
+        <div class="add-footer">
+          <select class="add-select" id="w-day">
+            <option value="0">Monday</option><option value="1">Tuesday</option>
+            <option value="2">Wednesday</option><option value="3">Thursday</option>
+            <option value="4">Friday</option><option value="5">Saturday</option>
+            <option value="6">Sunday</option>
+          </select>
+          <select class="add-select" id="w-priority">
+            <option value="high">🔴  High</option>
+            <option value="medium" selected>🟡  Medium</option>
+            <option value="low">🟢  Low</option>
+          </select>
+          <button class="add-btn" id="w-add">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Add Task
+          </button>
+        </div>
+      </div>
+
+      <div class="task-section">
+        <div class="section-label"><span class="dot"></span>All Weekly Tasks</div>
+        <div class="task-list" id="weekly-list"></div>
+      </div>
+
+    </section>
+
+    <!-- ─── MONTHLY ─── -->
+    <section class="view" id="view-monthly">
+
+      <div class="page-hero">
+        <div>
+          <p class="eyebrow">Long Horizon Goals</p>
+          <h1 class="page-title">Monthly<br>Goals</h1>
+        </div>
+        <div class="hero-stat">
+          <div class="hs-nums"><span id="mo-done">0</span><span class="hs-sep">/</span><span class="hs-dim" id="mo-total">0</span></div>
+          <div class="hs-label">Goals Achieved</div>
+        </div>
+      </div>
+
+      <div class="prog-row">
+        <span class="prog-label">Monthly Progress</span>
+        <span class="prog-pct" id="mo-pct">0%</span>
+      </div>
+      <div class="prog-track"><div class="prog-bar" id="mo-progress"></div></div>
+
+      <div class="cal-nav-row">
+        <button class="cal-nav-btn" id="cal-prev">&#8592;</button>
+        <h2 class="cal-month" id="cal-month"></h2>
+        <button class="cal-nav-btn" id="cal-next">&#8594;</button>
+      </div>
+      <div class="cal-grid" id="calendar-grid"></div>
+
+      <div class="add-card" style="margin-top:2.5rem">
+        <input type="text" class="add-input" id="m-input" placeholder="Set a monthly goal or milestone…">
+        <div class="add-footer">
+          <select class="add-select" id="m-priority">
+            <option value="high">🔴  High</option>
+            <option value="medium" selected>🟡  Medium</option>
+            <option value="low">🟢  Low</option>
+          </select>
+          <button class="add-btn" id="m-add">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Add Goal
+          </button>
+        </div>
+      </div>
+
+      <div class="task-section">
+        <div class="section-label"><span class="dot"></span>All Goals</div>
+        <div class="task-list" id="monthly-list"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
